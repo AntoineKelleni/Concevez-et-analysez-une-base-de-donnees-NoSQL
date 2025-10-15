@@ -1,0 +1,221 @@
+### Un certain nombre de chiffres ###
+
+1) Le nombre d’annonces par type de location
+
+netcites> db.logements.aggregate([{$sortByCount: "$property_type"}])
+______________________________________________________________________________________________
+[
+  { _id: 'Entire rental unit', count: 80516 },
+  { _id: 'Private room in rental unit', count: 5980 },
+  { _id: 'Entire condo', count: 2679 },
+  { _id: 'Room in boutique hotel', count: 1256 },
+  { _id: 'Entire loft', count: 1007 },
+  { _id: 'Room in hotel', count: 1003 },
+  { _id: 'Entire home', count: 696 },
+  { _id: 'Private room in bed and breakfast', count: 590 },
+  { _id: 'Private room in condo', count: 344 },
+  { _id: 'Entire serviced apartment', count: 277 },
+  { _id: 'Shared room in rental unit', count: 274 },
+  { _id: 'Entire townhouse', count: 268 },
+  { _id: 'Private room in home', count: 122 },
+  { _id: 'Private room in townhouse', count: 86 },
+  { _id: 'Private room in loft', count: 73 },
+  { _id: 'Room in aparthotel', count: 73 },
+  { _id: 'Shared room in hostel', count: 54 },
+  { _id: 'Private room in hostel', count: 53 },
+  { _id: 'Entire place', count: 46 },
+  { _id: 'Private room in guesthouse', count: 45 }
+]
+Type "it" for more
+______________________________________________________________________________________________
+
+2) Quelles sont les 5 annonces de location avec le plus d’évaluations ? Et combien d’évaluations ont-elles ?
+
+netcites> db.logements.find(
+...   { number_of_reviews: { $exists: true } }, // filtre les documents ayant ce champ
+...   { name: 1, host_name: 1, number_of_reviews: 1, property_type: 1} // affiche ces champs
+... ).sort({ number_of_reviews: -1 }) // tri décroissant
+... .limit(5)
+______________________________________________________________________________________________
+[
+  {
+    _id: ObjectId('68e8e20eca89cc237f6bb707'),
+    name: 'Sweet & cosy room next to Canal Saint Martin ❤️',
+    host_name: 'Alexandra',
+    property_type: 'Room in boutique hotel',
+    number_of_reviews: 3067
+  },
+  {
+    _id: ObjectId('68e8e20fca89cc237f6bcfe1'),
+    name: 'Double/Twin Room, close to Opera and the Louvre with breakfast included',
+    host_name: 'David',
+    property_type: 'Room in boutique hotel',
+    number_of_reviews: 2620
+  },
+  {
+    _id: ObjectId('68e8e20fca89cc237f6bf481'),
+    name: 'Bed in Dorm of 8 Beds "The Big One" in Paris',
+    host_name: 'The People',
+    property_type: 'Shared room in hostel',
+    number_of_reviews: 2294
+  },
+  {
+    _id: ObjectId('68e8e20fca89cc237f6bf269'),
+    name: 'Comfortable bed in shared rooms of 8 in Paris 12e',
+    host_name: 'The People Paris Bercy',
+    property_type: 'Shared room in hostel',
+    number_of_reviews: 2105
+  },
+  {
+    _id: ObjectId('68e8e20fca89cc237f6be3e0'),
+    name: 'Nice Room for 2 people',
+    host_name: 'Hotel De L’Aqueduc',
+    property_type: 'Room in boutique hotel',
+    number_of_reviews: 2048
+  }
+]
+______________________________________________________________________________________________
+
+
+03) Le nombre total d’hôtes différents
+netcites> db.logements.distinct("host_id").length
+______________________________________________________________________________________________
+71979
+______________________________________________________________________________________________
+
+04) Quel est le nombre de locations réservables instantanément ? Cela représente quelle proportion des annonces ? 
+______________________________________________________________________________________________
+netcites> // Nombre total d'annonces
+... var total = db.logements.estimatedDocumentCount();
+...
+... // Nombre de logements réservables instantanément ("t")
+... var instant = db.logements.countDocuments({ instant_bookable: "t" });
+...
+... // Calcul du pourcentage
+... var proportion = (instant / total * 100).toFixed(2);
+...
+... // Affichage formaté
+... print("Total d'annonces :", total);
+... print("Réservables instantanément :", instant);
+... print("Proportion :", proportion + "%");
+Total d'annonces : 95885
+Réservables instantanément : 22094
+Proportion : 23.04%
+______________________________________________________________________________________________
+
+
+Les hôtes avec plus de 100 annonces sur les plateformes
+Le nombre de super hôtes différents
+
+### Des statistiques ###
+Le taux de réservation moyen par mois par type de logement
+La médiane des nombre d’avis pour tous les logements (cela nous donne une idée du nombre de réservations pour les logements)
+La médiane des nombres d’avis par catégorie d’hôte (super hôte vs non super hôte)
+La densité de logements par quartier de Paris
+Les quartiers avec le plus fort taux de réservation par mois
+
+db.logements.find(
+  { number_of_reviews: { $exists: true } }, // filtre les documents ayant ce champ
+  { name: 1, host_name: 1, number_of_reviews: 1, property_type: 1} // affiche ces champs
+).sort({ number_of_reviews: -1 }) // tri décroissant
+.limit(5)
+
+05) Est-ce que des hôtes ont plus de 100 annonces sur les plateformes ? Et si oui qui sont-ils ? Cela représente quel pourcentage des hôtes ?
+
+______________________________________________________________________________________________
+netcites> db.logements.aggregate([
+...   { $group: { _id: "$host_id", nombre_annonces: { $sum: 1 }, nom_hote: { $first: "$host_name" } } },
+...   { $match: { nombre_annonces: { $gt: 100 } } },
+...   { $sort: { nombre_annonces: -1 } }
+... ])
+...
+[
+  { _id: 314994947, nombre_annonces: 730, nom_hote: 'Blueground' },
+  { _id: 33889201, nombre_annonces: 497, nom_hote: 'Veeve' },
+  { _id: 50502817, nombre_annonces: 426, nom_hote: 'Pierre De WeHost' },
+  { _id: 50978178, nombre_annonces: 307, nom_hote: 'Sébastien' },
+  {
+    _id: 26981054,
+    nombre_annonces: 274,
+    nom_hote: 'Cédric De ClickYourFlat'
+  },
+  { _id: 460047164, nombre_annonces: 232, nom_hote: 'FlexLiving' },
+  { _id: 7642792, nombre_annonces: 211, nom_hote: 'Ludovic' },
+  { _id: 436103373, nombre_annonces: 210, nom_hote: 'David Et Warren' },
+  { _id: 528015349, nombre_annonces: 189, nom_hote: 'Checkmyguest' },
+  { _id: 125797498, nombre_annonces: 170, nom_hote: 'Welkeys' },
+  { _id: 335998296, nombre_annonces: 154, nom_hote: 'Studioprestige' },
+  { _id: 51567288, nombre_annonces: 149, nom_hote: 'Sweet Inn' },
+  { _id: 1112584, nombre_annonces: 145, nom_hote: 'IntoParis' },
+  { _id: 564251645, nombre_annonces: 137, nom_hote: 'Rusard' },
+  { _id: 440295601, nombre_annonces: 132, nom_hote: 'Parisian Home' },
+  { _id: 517515174, nombre_annonces: 122, nom_hote: 'Barnes' },
+  { _id: 99040006, nombre_annonces: 120, nom_hote: 'Jérémy' },
+  {
+    _id: 28313443,
+    nombre_annonces: 119,
+    nom_hote: 'Michael & Johanna'
+  },
+  { _id: 24495283, nombre_annonces: 111, nom_hote: 'Giacomo' },
+  { _id: 506389460, nombre_annonces: 109, nom_hote: 'Check My Guest' }
+]
+Type "it" for more
+netcites> it
+[
+  { _id: 512746089, nombre_annonces: 104, nom_hote: 'Checkmyguest' },
+  { _id: 374552379, nombre_annonces: 104, nom_hote: 'Checkmyguest' },
+  { _id: 499962530, nombre_annonces: 103, nom_hote: 'Check My Guest' },
+  { _id: 21630783, nombre_annonces: 102, nom_hote: 'Pierre' }
+]
+netcites>
+______________________________________________________________________________________________
+
+netcites> var hotes_100 = db.logements.aggregate([
+...   { $group: { _id: "$host_id", count: { $sum: 1 } } },
+...   { $match: { count: { $gt: 100 } } }
+... ]).toArray().length
+...
+______________________________________________________________________________________________
+netcites> (hotes_100 / total_hotes * 100).toFixed(2) + "%"
+...
+0.03%
+netcites> // 1. Nombre total d'hôtes uniques
+... var total_hotes = db.logements.distinct("host_id").length
+... print("Nombre total d'hôtes :", total_hotes)
+...
+... // 2. Nombre d'hôtes avec plus de 100 annonces
+... var hotes_100 = db.logements.aggregate([
+...   { $group: { _id: "$host_id", count: { $sum: 1 } } },
+...   { $match: { count: { $gt: 100 } } }
+... ]).toArray().length
+... print("Nombre d'hôtes avec plus de 100 annonces :", hotes_100)
+...
+... // 3. Calcul du pourcentage
+... var pourcentage = (hotes_100 / total_hotes * 100).toFixed(2)
+... print("Pourcentage d'hôtes avec plus de 100 annonces :", pourcentage + "%")
+...
+Nombre total d'hôtes : 71979
+Nombre d'hôtes avec plus de 100 annonces : 24
+Pourcentage d'hôtes avec plus de 100 annonces : 0.03%
+______________________________________________________________________________________________
+
+
+06) Combien y a-t-il de super hôtes différents ? Cela représente quel pourcentage des hôtes ?
+
+
+netcites> // 1. Nombre total d'hôtes distincts
+... var total_hotes = db.logements.distinct("host_id").length
+... print("Nombre total d'hôtes :", total_hotes)
+...
+... // 2. Nombre de super hôtes distincts
+... var super_hotes = db.logements.distinct("host_id", { host_is_superhost: "t" }).length
+... print("Nombre de super hôtes :", super_hotes)
+...
+... // 3. Calcul du pourcentage
+... var pourcentage_super = (super_hotes / total_hotes * 100).toFixed(2)
+... print("Pourcentage de super hôtes :", pourcentage_super + "%")
+...
+Nombre total d'hôtes : 71979
+Nombre de super hôtes : 10027
+Pourcentage de super hôtes : 13.93%
+
