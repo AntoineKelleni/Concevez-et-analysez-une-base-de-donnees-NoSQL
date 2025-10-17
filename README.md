@@ -1,6 +1,8 @@
 <p style="text-align: center;">
   <img src="logo_OCR.jpg" alt="Logo Academy" width="100">
 </p>
+
+
 # Concevez et analysez une base de données NoSQL
 
 Projet pédagogique visant à concevoir un modèle de données NoSQL, charger des jeux de données dans une base MongoDB, puis réaliser des analyses à l’aide de requêtes (mongosh) et d’un notebook Python (PyMongo + Polars). Une présentation PDF synthétise la démarche et les résultats.
