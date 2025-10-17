@@ -8,16 +8,16 @@ Projet pédagogique visant à concevoir un modèle de données NoSQL, charger de
 # 📂 Contenu du dépôt
 
 requete_pymongo_polars.ipynb — Notebook Jupyter : connexion à MongoDB avec PyMongo, préparation/inspection de données et analyses avec Polars. 
-GitHub
+
 
 commande_requete_partie_2.txt — Ensemble de commandes et requêtes MongoDB (mongosh) utilisées pour l’exploration et l’agrégation. 
-GitHub
+
 
 KELLENI_Antoine_1_PPT_10_2025.pdf — Diaporama de présentation du projet (contexte, modèle, requêtes clés, résultats). 
-GitHub
+
 
 screenshot/ — Captures d’écran illustrant les étapes / résultats (ex. 7.png). 
-GitHub
+
 
 
 
