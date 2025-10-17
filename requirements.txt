@@ -1,0 +1,4 @@
+jupyter
+pymongo
+polars
+python-dotenv
